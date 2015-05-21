@@ -36,7 +36,6 @@ int main(int argc,
 	char** argv)
 {
 	std::vector< std::string > file_list = getImagesList("resources/inputs");
-	cleanOutputDir("resources/resized");
 	ResizeCallback callback(file_list.size());
 	ghog::lib::ImageUtils utils(&callback);
 	cv::Size new_size(24, 24);
