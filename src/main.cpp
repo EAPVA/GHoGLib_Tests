@@ -37,7 +37,7 @@ private:
 int main(int argc,
 	char** argv)
 {
-	std::vector<std::string> file_list = getImagesList("resources/inputs");
+	std::vector<std::string> file_list = getImagesList("resources/images");
 	ResizeCallback callback(file_list.size());
 	ghog::lib::IHog* utils = new ghog::lib::HogCPU("hog.xml");
 	cv::Size new_size(24, 24);
