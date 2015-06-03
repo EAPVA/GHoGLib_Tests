@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <include/ImageUtils.h>
+#include <include/HogCPU.h>
 
 #include "utils.h"
 
@@ -17,7 +17,9 @@ public:
 		_finished = 0;
 		_total_images = num_images;
 	}
-	void image_processed(cv::Mat ret_mat)
+
+	void image_processed(cv::Mat original,
+		cv::Mat processed)
 	{
 		_finished++;
 	}
@@ -35,15 +37,15 @@ private:
 int main(int argc,
 	char** argv)
 {
-	std::vector< std::string > file_list = getImagesList("resources/inputs");
+	std::vector<std::string> file_list = getImagesList("resources/inputs");
 	ResizeCallback callback(file_list.size());
-	ghog::lib::ImageUtils utils(&callback);
+	ghog::lib::IHog* utils = new ghog::lib::HogCPU("hog.xml");
 	cv::Size new_size(24, 24);
 
 	for(int i = 0; i < file_list.size(); ++i)
 	{
 		cv::Mat input_img = cv::imread(file_list[i], CV_LOAD_IMAGE_GRAYSCALE);
-		utils.resize(input_img, new_size);
+		utils->resize(input_img, new_size, &callback);
 	}
 	std::cout << "Processing " << file_list.size() << " images..." << std::endl;
 	while(!callback.is_finished())
