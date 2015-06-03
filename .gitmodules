@@ -1,0 +1,3 @@
+[submodule "GHoGLib"]
+	path = GHoGLib
+	url = https://github.com/EAPVA/GHoGLib.git
