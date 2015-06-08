@@ -11,17 +11,18 @@
 
 #include "utils.h"
 
-class ResizeCallback: public ghog::lib::ImageCallback
+class MyCallback: public ghog::lib::GradientCallback
 {
 public:
-	ResizeCallback(int num_images)
+	MyCallback(int num_images)
 	{
 		_finished = 0;
 		_total_images = num_images;
 	}
 
-	void image_processed(cv::Mat original,
-		cv::Mat processed)
+	void gradients_obtained(cv::Mat original,
+		cv::Mat gradients_magnitude,
+		cv::Mat gradients_phase)
 	{
 		_finished++;
 	}
@@ -44,29 +45,32 @@ private:
 int main(int argc,
 	char** argv)
 {
-	std::vector< std::string > file_list = getImagesList("resources/images");
-	ResizeCallback callback(file_list.size());
+	std::vector< std::string > file_list = getImagesList("../resources/images");
+	MyCallback callback(1);
 	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
 	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
-	cv::Size new_size(24, 24);
+
+	cv::Mat grad_mag(3648, 2736, CV_32FC1);
+	cv::Mat grad_phase(3648, 2736, CV_32FC1);
 
 	boost::chrono::steady_clock::time_point start;
 	boost::chrono::duration< float > time_elapsed;
 
-	std::cout << "Loading and processing images on the CPU." << std::endl;
+	std::cout << "Processing " << file_list.size() << " images on the CPU"
+		<< std::endl;
 	start = boost::chrono::steady_clock::now();
 	for(int i = 0; i < file_list.size(); ++i)
 	{
 		cv::Mat input_img = cv::imread(file_list[i], CV_LOAD_IMAGE_GRAYSCALE);
-		hog_cpu->resize(input_img, new_size, &callback);
+		input_img.convertTo(input_img, CV_32FC1);
+		hog_cpu->calc_gradient(input_img, grad_mag, grad_phase, &callback);
+		while(!callback.is_finished())
+		{
+			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+		}
+		callback.reset();
 	}
-	std::cout << "Processing " << file_list.size() << " images..." << std::endl;
-	while(!callback.is_finished())
-	{
-		std::cout << ".";
-		std::cout.flush();
-		boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-	}
+
 	time_elapsed = boost::chrono::steady_clock::now() - start;
 	std::cout << std::endl;
 	std::cout << "Images processed in " << time_elapsed << std::endl;
@@ -74,23 +78,25 @@ int main(int argc,
 
 	callback.reset();
 
-	std::cout << "Loading and processing images on the GPU." << std::endl;
+	std::cout << "Processing " << file_list.size() << " images on the GPU"
+		<< std::endl;
 	start = boost::chrono::steady_clock::now();
 	for(int i = 0; i < file_list.size(); ++i)
 	{
 		cv::Mat input_img = cv::imread(file_list[i], CV_LOAD_IMAGE_GRAYSCALE);
-		hog_gpu->resize(input_img, new_size, &callback);
+		input_img.convertTo(input_img, CV_32FC1);
+		hog_gpu->calc_gradient(input_img, grad_mag, grad_phase, &callback);
+		while(!callback.is_finished())
+		{
+			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+		}
+		callback.reset();
 	}
-	std::cout << "Processing " << file_list.size() << " images..." << std::endl;
-	while(!callback.is_finished())
-	{
-		std::cout << ".";
-		std::cout.flush();
-		boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-	}
+
 	time_elapsed = boost::chrono::steady_clock::now() - start;
 	std::cout << std::endl;
 	std::cout << "Images processed in " << time_elapsed << std::endl;
+
 	return 0;
 }
 
