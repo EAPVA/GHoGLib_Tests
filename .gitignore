@@ -35,3 +35,4 @@ resources/*
 /.ptp-sync
 
 src/.gitignore
+/Release

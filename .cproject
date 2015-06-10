@@ -101,6 +101,7 @@
 								<option id="nvcc.compiler.include.paths.702423732" name="Include paths (-I)" superClass="nvcc.compiler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/GHoGLib}&quot;"/>
+									<listOptionValue builtIn="false" value="/home/ubuntu/remote_workspace/GHoGLib_Example/GHoGLib"/>
 								</option>
 								<inputType id="nvcc.compiler.input.cu.2145262872" superClass="nvcc.compiler.input.cu"/>
 								<inputType id="nvcc.compiler.input.cpp.1487788892" superClass="nvcc.compiler.input.cpp"/>
@@ -138,6 +139,7 @@
 					<sass major="3" minor="5"/>
 					<ptx major="3" minor="2"/>
 				</executable>
+				<editor-arch major="3" minor="5"/>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
