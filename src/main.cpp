@@ -100,7 +100,18 @@ void measure_time(ghog::lib::IHog* hog,
 	cv::Mat input_img = hog->alloc_buffer(img_size, CV_32FC1, 0);
 	cv::Mat grad_mag = hog->alloc_buffer(window_size, CV_32FC1, 0);
 	cv::Mat grad_phase = hog->alloc_buffer(window_size, CV_32FC1, 0);
-	cv::Mat input_window;
+
+	std::cout << "Before first imread:" << std::endl;
+	std::cout << "Input image:" << std::endl;
+	std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+		<< ((long long)input_img.data) << std::endl;
+	std::cout << "Magnitude matrix:" << std::endl;
+	std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+		<< ((long long)grad_mag.data) << std::endl;
+	std::cout << "Phase matrix:" << std::endl;
+	std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+		<< ((long long)grad_phase.data) << std::endl;
+	std::cout << std::endl << std::endl;
 
 	boost::chrono::steady_clock::time_point start;
 	boost::chrono::duration< double > time_elapsed;
@@ -114,23 +125,63 @@ void measure_time(ghog::lib::IHog* hog,
 
 	for(int i = 0; i < image_list.size(); ++i)
 	{
+		std::cout << "read image" << std::endl;
 		cv::imread(image_list[i], CV_LOAD_IMAGE_GRAYSCALE).convertTo(input_img,
 			CV_32FC1);
 
+		std::cout << "display image" << std::endl;
+
+		for(int j = 0; j < input_img.rows; ++j)
+		{
+			std::cout << j << ": ";
+			std::cout.flush();
+			for(int k = 0; k < input_img.cols; ++k)
+			{
+				std::cout << k << " ";
+				std::cout << input_img.at< float >(j, k) << "  ";
+				std::cout.flush();
+			}
+			std::cout << std::endl;
+		}
+
+		std::cout << "imread #" << i << std::endl;
+		std::cout << "Input image:" << std::endl;
+		std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+			<< ((long long)input_img.data) << std::endl;
+		std::cout << "Magnitude matrix:" << std::endl;
+		std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+			<< ((long long)grad_mag.data) << std::endl;
+		std::cout << "Phase matrix:" << std::endl;
+		std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+			<< ((long long)grad_phase.data) << std::endl;
+		std::cout << std::endl << std::endl;
+
 		for(int j = 0; j < num_experiments; ++j)
 		{
+			std::cout << "Experiment #" << j << std::endl;
+			std::cout << "Input image:" << std::endl;
+			std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+				<< ((long long)input_img.data) << std::endl;
+			std::cout << "Magnitude matrix:" << std::endl;
+			std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+				<< ((long long)grad_mag.data) << std::endl;
+			std::cout << "Phase matrix:" << std::endl;
+			std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+				<< ((long long)grad_phase.data) << std::endl;
+			std::cout << std::endl << std::endl;
+
 			int pos_x = dist_w(random_gen);
 			int pos_y = dist_h(random_gen);
-			input_window = input_img.rowRange(pos_y,
-				pos_y + window_size.height + 1).colRange(pos_x,
-				pos_x + window_size.width + 1);
 
 			start = boost::chrono::steady_clock::now();
-			hog->calc_gradient(input_window, grad_mag, grad_phase, &callback);
-			while(!callback.is_finished())
-			{
-				boost::this_thread::yield();
-			}
+//			hog->calc_gradient(
+//				input_img.rowRange(pos_y, pos_y + window_size.height + 1)
+//					.colRange(pos_x, pos_x + window_size.width + 1), grad_mag,
+//				grad_phase, &callback);
+//			while(!callback.is_finished())
+//			{
+//				boost::this_thread::yield();
+//			}
 			time_elapsed = boost::chrono::steady_clock::now() - start;
 			callback.reset();
 			values.push_back(time_elapsed.count());
@@ -146,9 +197,9 @@ int main(int argc,
 	std::vector< std::string > file_list = getImagesList("../resources/images");
 	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
 	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
-	cv::Size img_size(3648, 2736);
-	cv::Size window_size(100, 100);
-	int num_experiments = 1000;
+	cv::Size img_size(64, 64);
+	cv::Size window_size(16, 16);
+	int num_experiments = 10;
 
 	boost::random::mt19937 random_gen;
 
