@@ -101,20 +101,36 @@ void measure_time(ghog::lib::IHog* hog,
 		<< " windows of size " << window_size << std::endl;
 
 	MyCallback callback(1);
-	cv::Mat input_img = hog->alloc_buffer(img_size, CV_32FC1, 0);
-	cv::Mat grad_mag = hog->alloc_buffer(window_size, CV_32FC1, 0);
-	cv::Mat grad_phase = hog->alloc_buffer(window_size, CV_32FC1, 0);
+	cv::Mat input_img;
+	cv::Mat grad_mag;
+	cv::Mat grad_phase;
+
+	std::cout << "Before allocation:" << std::endl;
+	std::cout << "Input image:" << std::endl;
+	std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+		<< ((void*)input_img.data) << std::endl;
+	std::cout << "Magnitude matrix:" << std::endl;
+	std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+		<< ((void*)grad_mag.data) << std::endl;
+	std::cout << "Phase matrix:" << std::endl;
+	std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+		<< ((void*)grad_phase.data) << std::endl;
+	std::cout << std::endl << std::endl;
+
+	hog->alloc_buffer(img_size, CV_32FC1, input_img);
+	hog->alloc_buffer(window_size, CV_32FC1, grad_mag);
+	hog->alloc_buffer(window_size, CV_32FC1, grad_phase);
 
 	std::cout << "Before first imread:" << std::endl;
 	std::cout << "Input image:" << std::endl;
 	std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
-		<< ((long long)input_img.data) << std::endl;
+		<< ((void*)input_img.data) << std::endl;
 	std::cout << "Magnitude matrix:" << std::endl;
 	std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
-		<< ((long long)grad_mag.data) << std::endl;
+		<< ((void*)grad_mag.data) << std::endl;
 	std::cout << "Phase matrix:" << std::endl;
 	std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
-		<< ((long long)grad_phase.data) << std::endl;
+		<< ((void*)grad_phase.data) << std::endl;
 	std::cout << std::endl << std::endl;
 
 	boost::chrono::steady_clock::time_point start;
@@ -129,63 +145,63 @@ void measure_time(ghog::lib::IHog* hog,
 
 	for(int i = 0; i < image_list.size(); ++i)
 	{
-		std::cout << "read image" << std::endl;
+//		std::cout << "read image" << std::endl;
 		cv::imread(image_list[i], CV_LOAD_IMAGE_GRAYSCALE).convertTo(input_img,
 			CV_32FC1);
 
-		std::cout << "display image" << std::endl;
+//		std::cout << "display image" << std::endl;
+//
+//		for(int j = 0; j < input_img.rows; ++j)
+//		{
+//			std::cout << j << ": ";
+//			std::cout.flush();
+//			for(int k = 0; k < input_img.cols; ++k)
+//			{
+//				std::cout << k << " ";
+//				std::cout << input_img.at< float >(j, k) << "  ";
+//				std::cout.flush();
+//			}
+//			std::cout << std::endl;
+//		}
 
-		for(int j = 0; j < input_img.rows; ++j)
-		{
-			std::cout << j << ": ";
-			std::cout.flush();
-			for(int k = 0; k < input_img.cols; ++k)
-			{
-				std::cout << k << " ";
-				std::cout << input_img.at< float >(j, k) << "  ";
-				std::cout.flush();
-			}
-			std::cout << std::endl;
-		}
-
-		std::cout << "imread #" << i << std::endl;
-		std::cout << "Input image:" << std::endl;
-		std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
-			<< ((long long)input_img.data) << std::endl;
-		std::cout << "Magnitude matrix:" << std::endl;
-		std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
-			<< ((long long)grad_mag.data) << std::endl;
-		std::cout << "Phase matrix:" << std::endl;
-		std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
-			<< ((long long)grad_phase.data) << std::endl;
-		std::cout << std::endl << std::endl;
+//		std::cout << "imread #" << i << std::endl;
+//		std::cout << "Input image:" << std::endl;
+//		std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+//			<< ((void*)input_img.data) << std::endl;
+//		std::cout << "Magnitude matrix:" << std::endl;
+//		std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+//			<< ((void*)grad_mag.data) << std::endl;
+//		std::cout << "Phase matrix:" << std::endl;
+//		std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+//			<< ((void*)grad_phase.data) << std::endl;
+//		std::cout << std::endl << std::endl;
 
 		for(int j = 0; j < num_experiments; ++j)
 		{
-			std::cout << "Experiment #" << j << std::endl;
-			std::cout << "Input image:" << std::endl;
-			std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
-				<< ((long long)input_img.data) << std::endl;
-			std::cout << "Magnitude matrix:" << std::endl;
-			std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
-				<< ((long long)grad_mag.data) << std::endl;
-			std::cout << "Phase matrix:" << std::endl;
-			std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
-				<< ((long long)grad_phase.data) << std::endl;
-			std::cout << std::endl << std::endl;
+//			std::cout << "Experiment #" << j << std::endl;
+//			std::cout << "Input image:" << std::endl;
+//			std::cout << "Step: " << input_img.step1() << "  " << "Addr: "
+//				<< ((void*)input_img.data) << std::endl;
+//			std::cout << "Magnitude matrix:" << std::endl;
+//			std::cout << "Step: " << grad_mag.step1() << "  " << "Addr: "
+//				<< ((void*)grad_mag.data) << std::endl;
+//			std::cout << "Phase matrix:" << std::endl;
+//			std::cout << "Step: " << grad_phase.step1() << "  " << "Addr: "
+//				<< ((void*)grad_phase.data) << std::endl;
+//			std::cout << std::endl << std::endl;
 
 			int pos_x = dist_w(random_gen);
 			int pos_y = dist_h(random_gen);
 
 			start = boost::chrono::steady_clock::now();
-//			hog->calc_gradient(
-//				input_img.rowRange(pos_y, pos_y + window_size.height + 1)
-//					.colRange(pos_x, pos_x + window_size.width + 1), grad_mag,
-//				grad_phase, &callback);
-//			while(!callback.is_finished())
-//			{
-//				boost::this_thread::yield();
-//			}
+			hog->calc_gradient(
+				input_img.rowRange(pos_y, pos_y + window_size.height + 1)
+					.colRange(pos_x, pos_x + window_size.width + 1), grad_mag,
+				grad_phase, &callback);
+			while(!callback.is_finished())
+			{
+				boost::this_thread::yield();
+			}
 			time_elapsed = boost::chrono::steady_clock::now() - start;
 			callback.reset();
 			values.push_back(time_elapsed.count());
@@ -205,24 +221,34 @@ void teste()
 	std::cout << "Before imread:" << std::endl;
 	std::cout << "Input image:" << std::endl;
 	std::cout << "Step: " << mat.step1() << "  " << "Addr: "
-		<< ((long long)mat.data) << std::endl;
+		<< ((void*)mat.data) << std::endl;
+	std::cout << "Step: " << cmem.step1() << "  " << "Addr: "
+		<< ((void*)cmem.data) << std::endl;
 	std::cout << "Loading image" << std::endl;
-	cv::imread("teste.png", CV_LOAD_IMAGE_GRAYSCALE).convertTo(mat, CV_32FC1);
 
-	std::cout << "After imread:" << std::endl;
+	std::cout << "Calling Mat::create:" << std::endl;
+	mat.create(mat.size(), mat.type());
 	std::cout << "Input image:" << std::endl;
 	std::cout << "Step: " << mat.step1() << "  " << "Addr: "
-		<< ((long long)mat.data) << std::endl;
+		<< ((void*)mat.data) << std::endl;
+	std::cout << "Step: " << cmem.step1() << "  " << "Addr: "
+		<< ((void*)cmem.data) << std::endl;
+
+	std::cout << "Loading image" << std::endl;
+	cv::imread("teste.png", CV_LOAD_IMAGE_GRAYSCALE).convertTo(mat, CV_32FC1);
+	std::cout << "Input image:" << std::endl;
+	std::cout << "Step: " << mat.step1() << "  " << "Addr: "
+		<< ((void*)mat.data) << std::endl;
+	std::cout << "Step: " << cmem.step1() << "  " << "Addr: "
+		<< ((void*)cmem.data) << std::endl;
 
 	std::cout << "Finish" << std::endl;
+
 }
 
 int main(int argc,
 	char** argv)
 {
-	teste();
-	return 0;
-
 	std::vector< std::string > file_list = getImagesList("../resources/images");
 	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
 	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
