@@ -14,6 +14,10 @@
 #include <include/HogCPU.h>
 #include <include/HogGPU.h>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/gpu/gpu.hpp>
+
 #include "utils.h"
 
 class MyCallback: public ghog::lib::GradientCallback
@@ -191,9 +195,34 @@ void measure_time(ghog::lib::IHog* hog,
 	report_statistics(values, "seconds");
 }
 
+void teste()
+{
+	std::cout << "Allocating buffer" << std::endl;
+	cv::gpu::CudaMem cmem(64, 64, CV_32FC1, cv::gpu::CudaMem::ALLOC_ZEROCOPY);
+	std::cout << "Creating header" << std::endl;
+	cv::Mat mat = cmem.createMatHeader();
+
+	std::cout << "Before imread:" << std::endl;
+	std::cout << "Input image:" << std::endl;
+	std::cout << "Step: " << mat.step1() << "  " << "Addr: "
+		<< ((long long)mat.data) << std::endl;
+	std::cout << "Loading image" << std::endl;
+	cv::imread("teste.png", CV_LOAD_IMAGE_GRAYSCALE).convertTo(mat, CV_32FC1);
+
+	std::cout << "After imread:" << std::endl;
+	std::cout << "Input image:" << std::endl;
+	std::cout << "Step: " << mat.step1() << "  " << "Addr: "
+		<< ((long long)mat.data) << std::endl;
+
+	std::cout << "Finish" << std::endl;
+}
+
 int main(int argc,
 	char** argv)
 {
+	teste();
+	return 0;
+
 	std::vector< std::string > file_list = getImagesList("../resources/images");
 	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
 	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
