@@ -73,6 +73,10 @@ void measure_time(ghog::lib::IHog* hog,
 	hog->alloc_buffer(window_size, CV_32FC1, grad_mag);
 	hog->alloc_buffer(window_size, CV_32FC1, grad_phase);
 
+	input_img.addref();
+	grad_mag.addref();
+	grad_phase.addref();
+
 	boost::chrono::steady_clock::time_point start;
 	boost::chrono::duration< double > time_elapsed;
 
@@ -112,9 +116,9 @@ int main(int argc,
 	std::vector< std::string > file_list = getImagesList("../resources/images");
 	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
 	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
-	cv::Size img_size(64, 64);
-	cv::Size window_size(16, 16);
-	int num_experiments = 10;
+	cv::Size img_size(3648, 2736);
+	cv::Size window_size(512, 512);
+	int num_experiments = 1000;
 
 	boost::random::mt19937 random_gen;
 
