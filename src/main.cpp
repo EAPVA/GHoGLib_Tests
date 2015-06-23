@@ -11,7 +11,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <include/HogCPU.h>
+#include <include/HogDescriptor.h>
 #include <include/HogGPU.h>
 
 #include "utils.h"
@@ -53,7 +53,7 @@ void report_statistics(std::vector< double > values,
 	std::cout << std::endl << std::endl;
 }
 
-void measure_time(ghog::lib::IHog* hog,
+void measure_time(ghog::lib::HogDescriptor* hog,
 	std::string hog_name,
 	std::vector< std::string > image_list,
 	cv::Size img_size,
@@ -68,14 +68,18 @@ void measure_time(ghog::lib::IHog* hog,
 	cv::Mat input_img;
 	cv::Mat grad_mag;
 	cv::Mat grad_phase;
+	cv::Mat descriptor;
+	cv::Size descriptor_size(hog->get_descriptor_size(), 1);
 
 	hog->alloc_buffer(img_size, CV_32FC1, input_img);
 	hog->alloc_buffer(window_size, CV_32FC1, grad_mag);
 	hog->alloc_buffer(window_size, CV_32FC1, grad_phase);
+	hog->alloc_buffer(descriptor_size, CV_32FC1, descriptor);
 
 	input_img.addref();
 	grad_mag.addref();
 	grad_phase.addref();
+	descriptor.addref();
 
 	boost::chrono::steady_clock::time_point start;
 	boost::chrono::duration< double > time_elapsed;
@@ -98,10 +102,12 @@ void measure_time(ghog::lib::IHog* hog,
 			int pos_y = dist_h(random_gen);
 
 			start = boost::chrono::steady_clock::now();
+			hog->image_normalization_sync(input_img);
 			hog->calc_gradient_sync(
 				input_img.rowRange(pos_y, pos_y + window_size.height + 1)
 					.colRange(pos_x, pos_x + window_size.width + 1), grad_mag,
 				grad_phase);
+			hog->create_descriptor_sync(grad_mag, grad_phase, descriptor);
 			time_elapsed = boost::chrono::steady_clock::now() - start;
 			values.push_back(time_elapsed.count());
 		}
@@ -113,11 +119,11 @@ void measure_time(ghog::lib::IHog* hog,
 int main(int argc,
 	char** argv)
 {
-	std::vector< std::string > file_list = getImagesList("../resources/images");
-	ghog::lib::IHog* hog_cpu = new ghog::lib::HogCPU("hog.xml");
-	ghog::lib::IHog* hog_gpu = new ghog::lib::HogGPU("hog.xml");
+	std::vector< std::string > file_list = getImagesList("resources/images");
+	ghog::lib::HogDescriptor* hog_cpu = new ghog::lib::HogDescriptor("hog.xml");
+	ghog::lib::HogDescriptor* hog_gpu = new ghog::lib::HogGPU("hog.xml");
 	cv::Size img_size(3648, 2736);
-	cv::Size window_size(512, 512);
+	cv::Size window_size(64, 128);
 	int num_experiments = 1000;
 
 	boost::random::mt19937 random_gen;
