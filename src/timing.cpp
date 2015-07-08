@@ -45,75 +45,84 @@ double measure_time(ghog::lib::HogDescriptor* hog,
 	input_img /= 256.0;
 
 	int i = 15;
+
+	window_size.width = 8 * 16 * i;
+	window_size.height = 8 * 9 * i;
+
+	boost::random::uniform_smallint< int > dist_w(1,
+		input_img.cols - window_size.width - 2);
+	boost::random::uniform_smallint< int > dist_h(1,
+		input_img.rows - window_size.height - 2);
+
+	std::cout << "Running timing experiment#" << i << " on descriptor "
+		<< hog_name << ", using " << num_experiments << " windows of size "
+		<< window_size << std::endl;
+
+	descriptor_size.width = hog->get_descriptor_size();
+	hog->alloc_buffer(window_size, CV_32FC3, normalized_img);
+	hog->alloc_buffer(window_size, CV_32FC1, grad_mag);
+	hog->alloc_buffer(window_size, CV_32FC1, grad_phase);
+	hog->alloc_buffer(descriptor_size, CV_32FC1, descriptor);
+
+	for(int j = 0; j < 10; ++j)
 	{
-		window_size.width = 8 * 16 * i;
-		window_size.height = 8 * 9 * i;
-		hog->set_param("CELL_GRID_COLS",
-			boost::lexical_cast< std::string >(16 * i));
-		hog->set_param("CELL_GRID_ROWS",
-			boost::lexical_cast< std::string >(9 * i));
+		int pos_x = dist_w(random_gen);
+		int pos_y = dist_h(random_gen);
 
-		boost::random::uniform_smallint< int > dist_w(1,
-			input_img.cols - window_size.width - 2);
-		boost::random::uniform_smallint< int > dist_h(1,
-			input_img.rows - window_size.height - 2);
+		input_img.rowRange(pos_y, pos_y + window_size.height).colRange(pos_x,
+			pos_x + window_size.width).copyTo(normalized_img);
 
-		std::cout << "Running timing experiment#" << i << " on descriptor "
-			<< hog_name << ", using " << num_experiments << " windows of size "
-			<< window_size << std::endl;
-
-		descriptor_size.width = hog->get_descriptor_size();
-		hog->alloc_buffer(window_size, CV_32FC3, normalized_img);
-		hog->alloc_buffer(window_size, CV_32FC1, grad_mag);
-		hog->alloc_buffer(window_size, CV_32FC1, grad_phase);
-		hog->alloc_buffer(descriptor_size, CV_32FC1, descriptor);
-
-		for(int j = 0; j < num_experiments; ++j)
-		{
-			int pos_x = dist_w(random_gen);
-			int pos_y = dist_h(random_gen);
-
-			input_img.rowRange(pos_y, pos_y + window_size.height).colRange(
-				pos_x, pos_x + window_size.width).copyTo(normalized_img);
-
-			start = boost::chrono::steady_clock::now();
-			hog->image_normalization_sync(normalized_img);
-			time_elapsed = boost::chrono::steady_clock::now() - start;
-			time_elapsed_normalization = time_elapsed.count();
-
-			start = boost::chrono::steady_clock::now();
-			hog->calc_gradient_sync(normalized_img, grad_mag, grad_phase);
-			time_elapsed = boost::chrono::steady_clock::now() - start;
-			time_elapsed_gradient = time_elapsed.count();
-
-			start = boost::chrono::steady_clock::now();
-			hog->create_descriptor_sync(grad_mag, grad_phase, descriptor);
-			time_elapsed = boost::chrono::steady_clock::now() - start;
-			time_elapsed_descriptor = time_elapsed.count();
-
-			times_normalization.push_back(time_elapsed_normalization);
-			times_gradient.push_back(time_elapsed_gradient);
-			times_descriptor.push_back(time_elapsed_descriptor);
-			times_total.push_back(
-				(time_elapsed_normalization + time_elapsed_gradient
-					+ time_elapsed_descriptor));
-		}
-
-		std::cout << "Time spent on normalization:" << std::endl;
-		report_statistics(times_normalization, 1000, "milliseconds");
-		std::cout << "Time spent on gradient:" << std::endl;
-		report_statistics(times_gradient, 1000, "milliseconds");
-		std::cout << "Time spent on descriptor:" << std::endl;
-		report_statistics(times_descriptor, 1000, "milliseconds");
-		std::cout << "Time spent total:" << std::endl;
-		report_statistics(times_total, 1000, "milliseconds");
-		std::cout << std::endl;
-
-		times_normalization.clear();
-		times_gradient.clear();
-		times_descriptor.clear();
-		times_total.clear();
+		hog->image_normalization_sync(normalized_img);
+		hog->calc_gradient_sync(normalized_img, grad_mag, grad_phase);
+		hog->create_descriptor_sync(grad_mag, grad_phase, descriptor);
 	}
+
+	for(int j = 0; j < num_experiments; ++j)
+	{
+		int pos_x = dist_w(random_gen);
+		int pos_y = dist_h(random_gen);
+
+		input_img.rowRange(pos_y, pos_y + window_size.height).colRange(pos_x,
+			pos_x + window_size.width).copyTo(normalized_img);
+
+		start = boost::chrono::steady_clock::now();
+		hog->image_normalization_sync(normalized_img);
+		time_elapsed = boost::chrono::steady_clock::now() - start;
+		time_elapsed_normalization = time_elapsed.count();
+
+		start = boost::chrono::steady_clock::now();
+		hog->calc_gradient_sync(normalized_img, grad_mag, grad_phase);
+		time_elapsed = boost::chrono::steady_clock::now() - start;
+		time_elapsed_gradient = time_elapsed.count();
+
+		start = boost::chrono::steady_clock::now();
+		hog->create_descriptor_sync(grad_mag, grad_phase, descriptor);
+		time_elapsed = boost::chrono::steady_clock::now() - start;
+		time_elapsed_descriptor = time_elapsed.count();
+
+		times_normalization.push_back(time_elapsed_normalization);
+		times_gradient.push_back(time_elapsed_gradient);
+		times_descriptor.push_back(time_elapsed_descriptor);
+		times_total.push_back(
+			(time_elapsed_normalization + time_elapsed_gradient
+				+ time_elapsed_descriptor));
+	}
+
+	std::cout << "Time spent on normalization:" << std::endl;
+	report_statistics(times_normalization, 1000, "milliseconds");
+	std::cout << "Time spent on gradient:" << std::endl;
+	report_statistics(times_gradient, 1000, "milliseconds");
+	std::cout << "Time spent on descriptor:" << std::endl;
+	report_statistics(times_descriptor, 1000, "milliseconds");
+	std::cout << "Time spent total:" << std::endl;
+	report_statistics(times_total, 1000, "milliseconds");
+	std::cout << std::endl;
+
+	times_normalization.clear();
+	times_gradient.clear();
+	times_descriptor.clear();
+	times_total.clear();
+
 	return 0.0;
 }
 
@@ -185,8 +194,22 @@ double measure_time_opencv(std::vector< std::string > image_list,
 
 		for(int j = 0; j < image_list.size(); ++j)
 		{
-			cv::imread(image_list[j], CV_LOAD_IMAGE_GRAYSCALE).convertTo(
-				input_img, CV_8UC1);
+			cv::imread(image_list[j], CV_LOAD_IMAGE_UNCHANGED).convertTo(
+				input_img, CV_8UC4);
+
+			for(int k = 0; k < 10; ++k)
+			{
+				int pos_x = dist_w(random_gen);
+				int pos_y = dist_h(random_gen);
+
+				input_img.rowRange(pos_y, pos_y + window_size.height).colRange(
+					pos_x, pos_x + window_size.width).copyTo(test_image);
+
+				gpu_test_image.upload(test_image);
+				gpu_hog.getDescriptors(gpu_test_image, cv::Size(8, 8),
+					gpu_descriptor);
+				gpu_descriptor.download(descriptor);
+			}
 
 			for(int k = 0; k < num_experiments; ++k)
 			{

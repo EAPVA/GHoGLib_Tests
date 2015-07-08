@@ -23,9 +23,9 @@ int main(int argc,
 	ghog::lib::HogDescriptor* hog_cpu = new ghog::lib::HogDescriptor("hog.xml");
 	ghog::lib::HogDescriptor* hog_gpu = new ghog::lib::HogGPU("hog.xml");
 	cv::Size img_size(3648, 2736);
-	cv::Size window_size(64, 128);
-	int num_experiments_timing = 10;
-	int num_experiments_difference = 2;
+	cv::Size window_size(1280, 720);
+	int num_experiments_timing = 500;
+	int num_experiments_difference = 1000;
 
 	boost::random::mt19937 random_gen;
 
@@ -34,8 +34,6 @@ int main(int argc,
 //	measure_time_opencv(file_list, img_size, num_experiments_timing,
 //		random_gen);
 	measure_time(hog_cpu, "My Hog_CPU", file_list, img_size,
-		num_experiments_timing, random_gen);
-	measure_time(hog_gpu, "My Hog_GPU", file_list, img_size,
 		num_experiments_timing, random_gen);
 	measure_time(hog_gpu, "My Hog_GPU", file_list, img_size,
 		num_experiments_timing, random_gen);
