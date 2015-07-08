@@ -1,2 +1,2 @@
-# GHoGLib_Example
-Example use of GHoG Library (also used for testing the library)
+# GHoGLib_Tests
+Performance tests for GHoG Library.
